@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Management</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        input, button { padding: 8px; margin: 5px; }
+        table { border-collapse: collapse; width: 60%; }
+        th, td { border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+
+<h2>Product Management CRUD</h2>
+
+<input type="text" id="name" placeholder="Product Name">
+<input type="number" id="price" placeholder="Price">
+<button onclick="addProduct()">Add</button>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th><th>Name</th><th>Price</th><th>Action</th>
+    </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+    const api = "http://localhost:8081/products";
+
+    function loadProducts() {
+        fetch(api)
+            .then(res => res.json())
+            .then(data => {
+                const body = document.getElementById("tableBody");
+                body.innerHTML = "";
+                data.forEach(p => {
+                    body.innerHTML += `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.name}</td>
+                        <td>${p.price}</td>
+                        <td>
+                            <button onclick="deleteProduct(${p.id})">Delete</button>
+                        </td>
+                    </tr>`;
+                });
+            });
+    }
+
+    function addProduct() {
+        const name = document.getElementById("name").value;
+        const price = document.getElementById("price").value;
+
+        fetch(api, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({name, price})
+        }).then(() => {
+            loadProducts();
+            document.getElementById("name").value = "";
+            document.getElementById("price").value = "";
+        });
+    }
+
+    function deleteProduct(id) {
+        fetch(`${api}/${id}`, { method: "DELETE" })
+            .then(() => loadProducts());
+    }
+
+    loadProducts();
+</script>
+
+</body>
+</html>
